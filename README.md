@@ -17,17 +17,129 @@ Replace this paragraph with your own summary of what your version does.
 
 ## How The System Works
 
-Explain your design in plain language.
+The recommender loads a catalog of songs from `data/songs.csv`, compares each song against a user taste profile, assigns it a score out of **5.0 points**, and returns the top-k highest-scoring songs.
 
-Some prompts to answer:
+### System Flowchart
 
-- What features does each `Song` use in your system
-  - For example: genre, mood, energy, tempo
-- What information does your `UserProfile` store
-- How does your `Recommender` compute a score for each song
-- How do you choose which songs to recommend
+```mermaid
+flowchart TD
+    A([songs.csv]) --> B[load_songs\nparse CSV into list of dicts]
+    B --> C[song_1, song_2, ... song_N]
 
-You can include a simple diagram or bullet list if helpful.
+    U([User Taste Profile\ngenre · mood · energy\nvalence · acousticness]) --> D
+
+    C --> D{For each song:\nscore_song}
+
+    D --> E{Genre match?}
+    E -- Yes --> F[+2.0 pts]
+    E -- No  --> G[+0.0 pts]
+
+    F --> H{Mood match?}
+    G --> H
+
+    H -- Yes --> I[+1.0 pts]
+    H -- No  --> J[+0.0 pts]
+
+    I --> K[Numerical Proximity\nenergy  × 1.00\nvalence × 0.50\nacousticness × 0.30\ndanceability × 0.15\ntempo_bpm × 0.05]
+    J --> K
+
+    K --> L[total_score\nmax = 5.0 pts]
+
+    L --> M[Collect all scored songs]
+    M --> N[Sort by total_score\ndescending]
+    N --> O[Return top-k songs\nwith score + explanation]
+    O --> P([Ranked Recommendations])
+```
+
+---
+
+### Song Features Used
+
+Each `Song` record carries ten attributes from the CSV. Seven are used directly in scoring:
+
+| Feature | Type | Role in Scoring |
+|---|---|---|
+| `genre` | Categorical | Hard filter — +2.0 pts on match |
+| `mood` | Categorical | Strong filter — +1.0 pts on match |
+| `energy` | Float 0–1 | Proximity score × 1.00 (highest weight) |
+| `valence` | Float 0–1 | Proximity score × 0.50 |
+| `acousticness` | Float 0–1 | Proximity score × 0.30 |
+| `danceability` | Float 0–1 | Proximity score × 0.15 |
+| `tempo_bpm` | Float (normalized) | Proximity score × 0.05 (tiebreaker) |
+
+`id`, `title`, and `artist` are carried through for display only — they do not affect the score.
+
+---
+
+### User Profile
+
+The user profile stores the listener's target values for every scored feature:
+
+```python
+user_prefs = {
+    "favorite_genre":      "lofi",   # categorical anchor
+    "favorite_mood":       "chill",  # categorical anchor
+    "target_energy":       0.38,     # continuous target (0.0–1.0)
+    "target_valence":      0.58,
+    "target_acousticness": 0.80,
+    "target_danceability": 0.58,
+    "target_tempo_bpm":    76,       # normalized before scoring
+    "likes_acoustic":      True,     # boolean flag for acousticness branch
+}
+```
+
+---
+
+### Algorithm Recipe — Finalized
+
+**Categorical scoring (binary — full points or zero):**
+```
++2.0 pts  →  genre match
++1.0 pts  →  mood match
+```
+
+**Numerical scoring (proximity formula for each continuous feature):**
+```
+proximity(user_val, song_val) = 1 - |user_val - song_val|
+
+energy_score       = 1.00 × proximity(target_energy,       song.energy)
+valence_score      = 0.50 × proximity(target_valence,      song.valence)
+acousticness_score = 0.30 × proximity(target_acousticness, song.acousticness)
+danceability_score = 0.15 × proximity(target_danceability, song.danceability)
+tempo_score        = 0.05 × proximity(norm(target_bpm),    norm(song.tempo_bpm))
+
+  where norm(bpm) = (bpm - 60) / (200 - 60)
+```
+
+**Total:**
+```
+total_score = genre_pts + mood_pts
+            + energy_score + valence_score
+            + acousticness_score + danceability_score + tempo_score
+
+MAX = 5.0 pts
+```
+
+**Ranking:**
+```
+Sort all (song, score) pairs by total_score descending → return top-k
+```
+
+---
+
+### Known Biases and Limitations
+
+**Genre over-prioritization.**
+Genre carries +2.0 out of 5.0 possible points (40% of the ceiling). A song with a perfect energy, valence, and mood match but a different genre label will score at most 3.0 — behind any same-genre song that scores above 3.0. A great jazz track will never surface for a pop listener even if the audio feel is identical.
+
+**Mood label rigidity.**
+Mood categories are hand-assigned strings (`"chill"`, `"intense"`, `"happy"`). The system treats `"relaxed"` and `"chill"` as completely different despite being sonically adjacent. A user wanting a relaxed vibe gets zero mood points for every "chill" song.
+
+**Catalog size amplifies genre bias.**
+With only 18 songs and 13 distinct genres, some genres have only one song. A user whose favorite genre is `"reggae"` will always surface Island Morning as the top result regardless of how poorly its other attributes match — because the +2.0 genre point is unbeatable when there is only one contender.
+
+**No cross-feature interaction.**
+The formula treats every feature independently. It cannot represent nuances like "high energy is fine *only when* it is also acoustic" — a preference that many ambient and folk listeners actually hold.
 
 ---
 
