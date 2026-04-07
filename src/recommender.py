@@ -3,10 +3,7 @@ from dataclasses import dataclass
 
 @dataclass
 class Song:
-    """
-    Represents a song and its attributes.
-    Required by tests/test_recommender.py
-    """
+    """Represents a song and its audio attributes loaded from the CSV catalog."""
     id: int
     title: str
     artist: str
@@ -20,36 +17,31 @@ class Song:
 
 @dataclass
 class UserProfile:
-    """
-    Represents a user's taste preferences.
-    Required by tests/test_recommender.py
-    """
+    """Stores a listener's target values for genre, mood, energy, and acoustic preference."""
     favorite_genre: str
     favorite_mood: str
     target_energy: float
     likes_acoustic: bool
 
 class Recommender:
-    """
-    OOP implementation of the recommendation logic.
-    Required by tests/test_recommender.py
-    """
+    """OOP wrapper around the catalog that scores and ranks songs for a given user."""
+
     def __init__(self, songs: List[Song]):
+        """Store the song catalog for repeated recommendation calls."""
         self.songs = songs
 
     def recommend(self, user: UserProfile, k: int = 5) -> List[Song]:
+        """Return the top-k songs best matching the user's taste profile."""
         # TODO: Implement recommendation logic
         return self.songs[:k]
 
     def explain_recommendation(self, user: UserProfile, song: Song) -> str:
+        """Return a human-readable string explaining why this song was recommended."""
         # TODO: Implement explanation logic
         return "Explanation placeholder"
 
 def load_songs(csv_path: str) -> List[Dict]:
-    """
-    Loads songs from a CSV file.
-    Required by src/main.py
-    """
+    """Parse a CSV file of songs into a list of typed dictionaries."""
     import csv
 
     songs = []
@@ -73,20 +65,7 @@ def load_songs(csv_path: str) -> List[Dict]:
     return songs
 
 def _score_song(user_prefs: Dict, song: Dict) -> Tuple[float, str]:
-    """
-    Score a single song against the user's taste profile.
-
-    Scoring recipe (max = 5.0 pts):
-      +2.0  genre match          (categorical)
-      +1.0  mood match           (categorical)
-      +1.00 energy proximity     (numerical)
-      +0.50 valence proximity    (numerical)
-      +0.30 acousticness proximity (numerical)
-      +0.15 danceability proximity (numerical)
-      +0.05 tempo proximity      (numerical, normalized)
-
-    Returns (total_score, explanation_string).
-    """
+    """Score one song out of 5.0 pts using genre/mood matches and numerical proximity, returning (score, explanation)."""
     score = 0.0
     reasons = []
 
@@ -147,12 +126,7 @@ def _score_song(user_prefs: Dict, song: Dict) -> Tuple[float, str]:
 
 
 def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tuple[Dict, float, str]]:
-    """
-    Score every song, rank by score descending, return top-k.
-    Required by src/main.py
-
-    Return format: list of (song_dict, score, explanation_string)
-    """
+    """Score all songs, sort by score descending, and return the top-k as (song, score, explanation) tuples."""
     scored = [(_score_song(user_prefs, song), song) for song in songs]
     scored.sort(key=lambda x: x[0][0], reverse=True)
     return [(song, score, explanation) for (score, explanation), song in scored[:k]]
