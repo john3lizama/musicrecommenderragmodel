@@ -143,6 +143,83 @@ The formula treats every feature independently. It cannot represent nuances like
 
 ---
 
+## Terminal Output
+
+Running `python3 src/main.py` with the **lofi / chill** profile produces:
+
+```
+Loaded songs: 18
+
+============================================================
+  MUSIC RECOMMENDER — Top 5 Results
+  Profile: LOFI / CHILL / energy 0.38
+============================================================
+
+  #1  Library Rain  —  Paper Lanterns
+       Score: 4.94 / 5.00
+       Genre: lofi  |  Mood: chill
+       Why recommended:
+         • genre match (+2.0)
+         • mood match (+1.0)
+         • energy 0.35 vs target 0.38 (+0.97)
+         • valence 0.6 vs target 0.58 (+0.49)
+         • acousticness 0.86 vs target 0.8 (+0.28)
+         • danceability 0.58 vs target 0.58 (+0.15)
+         • tempo 72.0 BPM vs target 76 BPM (+0.05)
+
+  #2  Midnight Coding  —  LoRoom
+       Score: 4.91 / 5.00
+       Genre: lofi  |  Mood: chill
+       Why recommended:
+         • genre match (+2.0)
+         • mood match (+1.0)
+         • energy 0.42 vs target 0.38 (+0.96)
+         • valence 0.56 vs target 0.58 (+0.49)
+         • acousticness 0.71 vs target 0.8 (+0.27)
+         • danceability 0.62 vs target 0.58 (+0.14)
+         • tempo 78.0 BPM vs target 76 BPM (+0.05)
+
+  #3  Focus Flow  —  LoRoom
+       Score: 3.96 / 5.00
+       Genre: lofi  |  Mood: focused
+       Why recommended:
+         • genre match (+2.0)
+         • mood mismatch: focused (+0.0)
+         • energy 0.4 vs target 0.38 (+0.98)
+         • valence 0.59 vs target 0.58 (+0.49)
+         • acousticness 0.78 vs target 0.8 (+0.29)
+         • danceability 0.6 vs target 0.58 (+0.15)
+         • tempo 80.0 BPM vs target 76 BPM (+0.05)
+
+  #4  Spacewalk Thoughts  —  Orbit Bloom
+       Score: 2.78 / 5.00
+       Genre: ambient  |  Mood: chill
+       Why recommended:
+         • genre mismatch: ambient (+0.0)
+         • mood match (+1.0)
+         • energy 0.28 vs target 0.38 (+0.9)
+         • valence 0.65 vs target 0.58 (+0.46)
+         • acousticness 0.92 vs target 0.8 (+0.26)
+         • danceability 0.41 vs target 0.58 (+0.12)
+         • tempo 60.0 BPM vs target 76 BPM (+0.04)
+
+  #5  Coffee Shop Stories  —  Slow Stereo
+       Score: 1.88 / 5.00
+       Genre: jazz  |  Mood: relaxed
+       Why recommended:
+         • genre mismatch: jazz (+0.0)
+         • mood mismatch: relaxed (+0.0)
+         • energy 0.37 vs target 0.38 (+0.99)
+         • valence 0.71 vs target 0.58 (+0.43)
+         • acousticness 0.89 vs target 0.8 (+0.27)
+         • danceability 0.54 vs target 0.58 (+0.14)
+         • tempo 90.0 BPM vs target 76 BPM (+0.05)
+
+============================================================
+```
+
+---
+
 ## Getting Started
 
 ### Setup
