@@ -217,6 +217,17 @@ Loaded songs: 18
 
 ============================================================
 ```
+ScreenShots:
+
+<img width="453" height="439" alt="Screenshot 2026-04-09 at 12 08 07 PM" src="https://github.com/user-attachments/assets/4c17229d-2566-41a4-be0f-a625b41db10c" />
+
+<img width="244" height="412" alt="Screenshot 2026-04-09 at 12 08 29 PM" src="https://github.com/user-attachments/assets/17cf5ff1-0726-48d7-a485-074c3d0fa9b2" />
+
+<img width="220" height="401" alt="Screenshot 2026-04-09 at 12 08 22 PM" src="https://github.com/user-attachments/assets/d572d362-334f-49ce-945e-a1ebfa0f26de" />
+
+<img width="361" height="400" alt="Screenshot 2026-04-09 at 12 08 14 PM" src="https://github.com/user-attachments/assets/4fc0166a-a6a2-4cfd-a28d-82c808c048b6" />
+
+
 
 ---
 
