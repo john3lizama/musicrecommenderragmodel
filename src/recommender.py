@@ -71,8 +71,8 @@ def _score_song(user_prefs: Dict, song: Dict) -> Tuple[float, str]:
 
     # --- Categorical: genre ---
     if song["genre"] == user_prefs.get("favorite_genre", ""):
-        score += 2.0
-        reasons.append("genre match (+2.0)")
+        score += 1.0
+        reasons.append("genre match (+1.0)")
     else:
         reasons.append(f"genre mismatch: {song['genre']} (+0.0)")
 
@@ -83,10 +83,10 @@ def _score_song(user_prefs: Dict, song: Dict) -> Tuple[float, str]:
     else:
         reasons.append(f"mood mismatch: {song['mood']} (+0.0)")
 
-    # --- Numerical: energy (weight 1.00) ---
+    # --- Numerical: energy (weight 2.00) ---
     if "target_energy" in user_prefs:
         proximity = 1.0 - abs(user_prefs["target_energy"] - song["energy"])
-        points = round(1.00 * proximity, 2)
+        points = round(2.00 * proximity, 2)
         score += points
         reasons.append(f"energy {song['energy']} vs target {user_prefs['target_energy']} (+{points})")
 
