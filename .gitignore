@@ -13,3 +13,6 @@ venv/
 
 # Pytest cache
 .pytest_cache/
+
+# RAG embedding cache (auto-generated, do not commit)
+data/kb_embeddings.pkl

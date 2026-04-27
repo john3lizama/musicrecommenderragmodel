@@ -1,3 +1,9 @@
+# Core dependencies
 pandas
 pytest
 streamlit
+
+# RAG layer dependencies (pinned for reproducibility)
+sentence-transformers==3.4.1
+requests==2.32.3
+numpy==2.2.4
