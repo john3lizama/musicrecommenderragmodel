@@ -1,0 +1,190 @@
+<svg viewBox="0 0 920 700" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace, 'SF Mono', Consolas, monospace" role="img">
+  <title>Music Recommender + RAG — System Diagram</title>
+  <desc>Full system diagram showing data flow from input through scoring and RAG layers to output, with the testing layer shown at the bottom.</desc>
+
+  <!-- Background -->
+  <rect width="920" height="700" fill="#f8f9fa" rx="12"/>
+
+  <!-- Title -->
+  <text x="460" y="36" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1a2e" font-family="system-ui, sans-serif">Music Recommender + RAG — System Architecture</text>
+  <text x="460" y="56" text-anchor="middle" font-size="12" fill="#6b7280" font-family="system-ui, sans-serif">Data flow: Input → Scoring Engine → RAG Layer → Output</text>
+
+  <!-- ═══════════════════════ LAYER LABELS ═══════════════════════ -->
+  <!-- Input label -->
+  <rect x="12" y="76" width="60" height="110" rx="6" fill="#dbeafe" opacity="0.6"/>
+  <text x="42" y="140" text-anchor="middle" font-size="10" font-weight="700" fill="#1d4ed8" transform="rotate(-90 42 140)" font-family="system-ui, sans-serif">INPUT</text>
+
+  <!-- Scoring label -->
+  <rect x="12" y="196" width="60" height="130" rx="6" fill="#fef9c3" opacity="0.6"/>
+  <text x="42" y="268" text-anchor="middle" font-size="10" font-weight="700" fill="#a16207" transform="rotate(-90 42 268)" font-family="system-ui, sans-serif">SCORING ENGINE</text>
+
+  <!-- RAG label -->
+  <rect x="12" y="336" width="60" height="220" rx="6" fill="#f3e8ff" opacity="0.6"/>
+  <text x="42" y="456" text-anchor="middle" font-size="10" font-weight="700" fill="#7c3aed" transform="rotate(-90 42 456)" font-family="system-ui, sans-serif">RAG LAYER</text>
+
+  <!-- Output label -->
+  <rect x="12" y="566" width="60" height="80" rx="6" fill="#dcfce7" opacity="0.6"/>
+  <text x="42" y="610" text-anchor="middle" font-size="10" font-weight="700" fill="#16a34a" transform="rotate(-90 42 610)" font-family="system-ui, sans-serif">OUTPUT</text>
+
+  <!-- ═══════════════════════ INPUT LAYER ═══════════════════════ -->
+
+  <!-- songs.csv -->
+  <rect x="90" y="82" width="150" height="70" rx="8" fill="#bfdbfe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="165" y="108" text-anchor="middle" font-size="13" font-weight="700" fill="#1e3a8a" font-family="system-ui, sans-serif">songs.csv</text>
+  <text x="165" y="126" text-anchor="middle" font-size="10" fill="#1e40af" font-family="system-ui, sans-serif">18 songs · 10 features</text>
+  <text x="165" y="141" text-anchor="middle" font-size="10" fill="#1e40af" font-family="system-ui, sans-serif">genre, mood, energy, bpm…</text>
+
+  <!-- Arrow: songs.csv → load_songs -->
+  <line x1="240" y1="117" x2="296" y2="117" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+  <!-- load_songs -->
+  <rect x="296" y="82" width="150" height="70" rx="8" fill="#bfdbfe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="371" y="108" text-anchor="middle" font-size="13" font-weight="700" fill="#1e3a8a" font-family="system-ui, sans-serif">load_songs()</text>
+  <text x="371" y="126" text-anchor="middle" font-size="10" fill="#1e40af" font-family="system-ui, sans-serif">parse CSV → list of</text>
+  <text x="371" y="141" text-anchor="middle" font-size="10" fill="#1e40af" font-family="system-ui, sans-serif">typed song dicts</text>
+
+  <!-- Arrow: load_songs → scoring -->
+  <line x1="446" y1="117" x2="502" y2="117" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+  <!-- Song Catalog box -->
+  <rect x="502" y="82" width="160" height="70" rx="8" fill="#bfdbfe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="582" y="108" text-anchor="middle" font-size="13" font-weight="700" fill="#1e3a8a" font-family="system-ui, sans-serif">Song Catalog</text>
+  <text x="582" y="126" text-anchor="middle" font-size="10" fill="#1e40af" font-family="system-ui, sans-serif">18 song dicts in memory</text>
+  <text x="582" y="141" text-anchor="middle" font-size="10" fill="#1e40af" font-family="system-ui, sans-serif">ready for scoring</text>
+
+  <!-- User Profile box -->
+  <rect x="688" y="82" width="210" height="70" rx="8" fill="#bfdbfe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="793" y="103" text-anchor="middle" font-size="13" font-weight="700" fill="#1e3a8a" font-family="system-ui, sans-serif">User Profile</text>
+  <text x="793" y="120" text-anchor="middle" font-size="10" fill="#1e40af" font-family="system-ui, sans-serif">favorite_genre · favorite_mood</text>
+  <text x="793" y="135" text-anchor="middle" font-size="10" fill="#1e40af" font-family="system-ui, sans-serif">target_energy · target_valence</text>
+  <text x="793" y="150" text-anchor="middle" font-size="10" fill="#1e40af" font-family="system-ui, sans-serif">target_acousticness · target_bpm</text>
+
+  <!-- ═══════════════════════ SCORING ENGINE ═══════════════════════ -->
+
+  <!-- Arrow: Catalog → recommend_songs -->
+  <line x1="582" y1="152" x2="582" y2="202" stroke="#a16207" stroke-width="2" marker-end="url(#arrowYellow)"/>
+  <!-- Arrow: User Profile → recommend_songs -->
+  <line x1="793" y1="152" x2="793" y2="202" stroke="#a16207" stroke-width="2" marker-end="url(#arrowYellow)"/>
+  <!-- connector line -->
+  <line x1="582" y1="202" x2="793" y2="202" stroke="#a16207" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+  <!-- recommend_songs + _score_song -->
+  <rect x="90" y="202" width="808" height="114" rx="8" fill="#fef9c3" stroke="#d97706" stroke-width="1.5"/>
+  <text x="494" y="224" text-anchor="middle" font-size="13" font-weight="700" fill="#92400e" font-family="system-ui, sans-serif">recommend_songs() + _score_song() — Scoring Engine</text>
+
+  <!-- sub-boxes inside scoring -->
+  <rect x="106" y="234" width="148" height="68" rx="6" fill="#fde68a" stroke="#f59e0b" stroke-width="1"/>
+  <text x="180" y="253" text-anchor="middle" font-size="11" font-weight="700" fill="#78350f" font-family="system-ui, sans-serif">Categorical</text>
+  <text x="180" y="269" text-anchor="middle" font-size="10" fill="#92400e" font-family="system-ui, sans-serif">genre match  +1.0 pts</text>
+  <text x="180" y="283" text-anchor="middle" font-size="10" fill="#92400e" font-family="system-ui, sans-serif">mood match   +1.0 pts</text>
+  <text x="180" y="297" text-anchor="middle" font-size="10" fill="#92400e" font-family="system-ui, sans-serif">binary — full or zero</text>
+
+  <rect x="270" y="234" width="168" height="68" rx="6" fill="#fde68a" stroke="#f59e0b" stroke-width="1"/>
+  <text x="354" y="253" text-anchor="middle" font-size="11" font-weight="700" fill="#78350f" font-family="system-ui, sans-serif">Proximity Scoring</text>
+  <text x="354" y="269" text-anchor="middle" font-size="10" fill="#92400e" font-family="system-ui, sans-serif">energy   ×2.00</text>
+  <text x="354" y="283" text-anchor="middle" font-size="10" fill="#92400e" font-family="system-ui, sans-serif">valence  ×0.50 · acoust. ×0.30</text>
+  <text x="354" y="297" text-anchor="middle" font-size="10" fill="#92400e" font-family="system-ui, sans-serif">dance ×0.15 · tempo ×0.05</text>
+
+  <rect x="454" y="234" width="148" height="68" rx="6" fill="#fde68a" stroke="#f59e0b" stroke-width="1"/>
+  <text x="528" y="253" text-anchor="middle" font-size="11" font-weight="700" fill="#78350f" font-family="system-ui, sans-serif">Total Score</text>
+  <text x="528" y="269" text-anchor="middle" font-size="10" fill="#92400e" font-family="system-ui, sans-serif">sum → max 4.0 pts</text>
+  <text x="528" y="283" text-anchor="middle" font-size="10" fill="#92400e" font-family="system-ui, sans-serif">sort descending</text>
+  <text x="528" y="297" text-anchor="middle" font-size="10" fill="#92400e" font-family="system-ui, sans-serif">return top-k songs</text>
+
+  <rect x="618" y="234" width="264" height="68" rx="6" fill="#fde68a" stroke="#f59e0b" stroke-width="1"/>
+  <text x="750" y="253" text-anchor="middle" font-size="11" font-weight="700" fill="#78350f" font-family="system-ui, sans-serif">Known Limitation (solved by RAG)</text>
+  <text x="750" y="269" text-anchor="middle" font-size="10" fill="#92400e" font-family="system-ui, sans-serif">"chill" ≠ "relaxed" (string mismatch)</text>
+  <text x="750" y="283" text-anchor="middle" font-size="10" fill="#92400e" font-family="system-ui, sans-serif">off-genre songs have no context</text>
+  <text x="750" y="297" text-anchor="middle" font-size="10" fill="#92400e" font-family="system-ui, sans-serif">explanations are bullet-point math</text>
+
+  <!-- Arrow: Scoring → RAG -->
+  <line x1="350" y1="316" x2="350" y2="342" stroke="#7c3aed" stroke-width="2" marker-end="url(#arrowPurple)"/>
+
+  <!-- ═══════════════════════ RAG LAYER ═══════════════════════ -->
+
+  <!-- KnowledgeBase -->
+  <rect x="90" y="342" width="210" height="104" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="195" y="364" text-anchor="middle" font-size="13" font-weight="700" fill="#4c1d95" font-family="system-ui, sans-serif">KnowledgeBase</text>
+  <text x="195" y="382" text-anchor="middle" font-size="10" fill="#5b21b6" font-family="system-ui, sans-serif">knowledge_base.txt → 33 chunks</text>
+  <text x="195" y="397" text-anchor="middle" font-size="10" fill="#5b21b6" font-family="system-ui, sans-serif">all-MiniLM-L6-v2 embeddings</text>
+  <text x="195" y="412" text-anchor="middle" font-size="10" fill="#5b21b6" font-family="system-ui, sans-serif">cached to kb_embeddings.pkl</text>
+  <text x="195" y="427" text-anchor="middle" font-size="10" fill="#5b21b6" font-family="system-ui, sans-serif">cosine similarity retrieval</text>
+  <text x="195" y="440" text-anchor="middle" font-size="10" font-weight="700" fill="#7c3aed" font-family="system-ui, sans-serif">→ top-2 relevant chunks</text>
+
+  <!-- Arrow: KB → RAGExplainer -->
+  <line x1="300" y1="394" x2="356" y2="394" stroke="#7c3aed" stroke-width="2" marker-end="url(#arrowPurple)"/>
+
+  <!-- RAGExplainer (center) -->
+  <rect x="356" y="342" width="260" height="210" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="486" y="366" text-anchor="middle" font-size="14" font-weight="700" fill="#4c1d95" font-family="system-ui, sans-serif">RAGExplainer</text>
+  <text x="486" y="384" text-anchor="middle" font-size="10" fill="#6d28d9" font-family="system-ui, sans-serif">① _build_query(song + user_prefs)</text>
+  <text x="486" y="399" text-anchor="middle" font-size="10" fill="#6d28d9" font-family="system-ui, sans-serif">   "lofi chill ambient chill"</text>
+  <text x="486" y="418" text-anchor="middle" font-size="10" fill="#6d28d9" font-family="system-ui, sans-serif">② kb.retrieve(query, top_k=2)</text>
+  <text x="486" y="433" text-anchor="middle" font-size="10" fill="#6d28d9" font-family="system-ui, sans-serif">   fetch semantically close chunks</text>
+  <text x="486" y="452" text-anchor="middle" font-size="10" fill="#6d28d9" font-family="system-ui, sans-serif">③ _build_prompt(user + chunks + song)</text>
+  <text x="486" y="467" text-anchor="middle" font-size="10" fill="#6d28d9" font-family="system-ui, sans-serif">   ground LLM with retrieved knowledge</text>
+  <text x="486" y="486" text-anchor="middle" font-size="10" fill="#6d28d9" font-family="system-ui, sans-serif">④ ollama.generate(prompt)</text>
+  <text x="486" y="505" text-anchor="middle" font-size="10" fill="#6d28d9" font-family="system-ui, sans-serif">⑤ _quality_check() — 10–500 chars</text>
+  <text x="486" y="524" text-anchor="middle" font-size="10" font-weight="700" fill="#7c3aed" font-family="system-ui, sans-serif">⑥ return explanation or fallback</text>
+
+  <!-- Arrow: RAGExplainer → OllamaClient -->
+  <line x1="616" y1="394" x2="668" y2="394" stroke="#7c3aed" stroke-width="2" marker-end="url(#arrowPurple)"/>
+
+  <!-- OllamaClient -->
+  <rect x="668" y="342" width="230" height="104" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="783" y="364" text-anchor="middle" font-size="13" font-weight="700" fill="#4c1d95" font-family="system-ui, sans-serif">OllamaClient</text>
+  <text x="783" y="382" text-anchor="middle" font-size="10" fill="#5b21b6" font-family="system-ui, sans-serif">POST localhost:11434/api/generate</text>
+  <text x="783" y="397" text-anchor="middle" font-size="10" fill="#5b21b6" font-family="system-ui, sans-serif">model: llama3.2:3b (local, free)</text>
+  <text x="783" y="412" text-anchor="middle" font-size="10" fill="#5b21b6" font-family="system-ui, sans-serif">timeout: 30s</text>
+  <text x="783" y="427" text-anchor="middle" font-size="10" fill="#dc2626" font-family="system-ui, sans-serif">catches: ConnectionError · 404</text>
+  <text x="783" y="442" text-anchor="middle" font-size="10" fill="#dc2626" font-family="system-ui, sans-serif">catches: Timeout · JSONDecodeError</text>
+
+  <!-- Fallback box -->
+  <rect x="668" y="458" width="230" height="94" rx="8" fill="#fecaca" stroke="#ef4444" stroke-width="1.5"/>
+  <text x="783" y="478" text-anchor="middle" font-size="12" font-weight="700" fill="#991b1b" font-family="system-ui, sans-serif">Fallback (Guardrail)</text>
+  <text x="783" y="496" text-anchor="middle" font-size="10" fill="#7f1d1d" font-family="system-ui, sans-serif">if Ollama returns None</text>
+  <text x="783" y="511" text-anchor="middle" font-size="10" fill="#7f1d1d" font-family="system-ui, sans-serif">or response fails quality check</text>
+  <text x="783" y="526" text-anchor="middle" font-size="10" fill="#7f1d1d" font-family="system-ui, sans-serif">→ use score-based explanation</text>
+  <text x="783" y="541" text-anchor="middle" font-size="10" font-weight="700" fill="#991b1b" font-family="system-ui, sans-serif">system never crashes or silences</text>
+
+  <!-- Arrow: Ollama failure → Fallback -->
+  <line x1="783" y1="446" x2="783" y2="458" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowRed)"/>
+
+  <!-- Arrow: RAGExplainer → Output -->
+  <line x1="486" y1="552" x2="486" y2="572" stroke="#16a34a" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+  <!-- ═══════════════════════ OUTPUT LAYER ═══════════════════════ -->
+  <rect x="90" y="572" width="808" height="70" rx="8" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="494" y="595" text-anchor="middle" font-size="13" font-weight="700" fill="#14532d" font-family="system-ui, sans-serif">Output — Top-K Songs with RAG Explanations</text>
+  <text x="250" y="615" text-anchor="middle" font-size="10" fill="#166534" font-family="system-ui, sans-serif">Rank · Title · Artist · Genre · Mood</text>
+  <text x="494" y="615" text-anchor="middle" font-size="10" fill="#166534" font-family="system-ui, sans-serif">"Library Rain is exactly the kind of track…" (LLM)</text>
+  <text x="750" y="615" text-anchor="middle" font-size="10" fill="#166534" font-family="system-ui, sans-serif">Score breakdown · Scoring bullets</text>
+  <line x1="350" y1="580" x2="350" y2="642" stroke="#16a34a" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="630" y1="580" x2="630" y2="642" stroke="#16a34a" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <!-- ═══════════════════════ TESTING BADGE ═══════════════════════ -->
+  <rect x="90" y="655" width="808" height="36" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+  <text x="180" y="678" text-anchor="middle" font-size="11" font-weight="700" fill="#075985" font-family="system-ui, sans-serif">pytest · 7 Tests</text>
+  <text x="400" y="678" text-anchor="middle" font-size="10" fill="#0369a1" font-family="system-ui, sans-serif">2 recommender tests · 3 KnowledgeBase tests (offline) · 2 RAGExplainer tests (mocked Ollama)</text>
+  <text x="790" y="678" text-anchor="middle" font-size="10" font-weight="700" fill="#075985" font-family="system-ui, sans-serif">Human reviews output</text>
+  <line x1="700" y1="658" x2="700" y2="691" stroke="#0284c7" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <!-- ═══════════════════════ ARROW MARKERS ═══════════════════════ -->
+  <defs>
+    <marker id="arrowBlue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#3b82f6"/>
+    </marker>
+    <marker id="arrowYellow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#d97706"/>
+    </marker>
+    <marker id="arrowPurple" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#7c3aed"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#16a34a"/>
+    </marker>
+    <marker id="arrowRed" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#ef4444"/>
+    </marker>
+  </defs>
+</svg>
