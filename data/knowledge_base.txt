@@ -1,0 +1,71 @@
+# Music Knowledge Base
+# Format: one chunk per entry, separated by ---
+# Covers: all genres and moods in the catalog + cross-genre relationships
+# Used by the RAG layer to ground song explanations
+
+---
+Lofi hip-hop wraps you in a sense of quiet comfort. Its defining qualities are mellow tempos, warm lo-fi textures, and a nostalgic haze that feels like a half-remembered afternoon. The crackling vinyl sounds and understated beats are designed to fade into the background, making it ideal for studying, coding late at night, or winding down. High acousticness and low energy are its signature — it never demands your attention, it just keeps you company.
+---
+Ambient music exists at the edge of sound and silence. It is less about melody and more about texture — slowly evolving pads, wide open spaces, and a sense of floating without direction. Listening to ambient music feels like staring out a window on a long train ride. It has almost no rhythmic urgency, with very low energy and very high acousticness. It is the genre most suited for deep focus, meditation, or simply letting your mind drift.
+---
+Jazz carries decades of warmth and spontaneity in every note. It thrives on improvisation, conversation between instruments, and a relaxed swing that feels lived-in rather than produced. A jazz track might feel like a late-night bar where the music is an afterthought to the mood — unhurried, intimate, and full of subtle detail. It pairs naturally with winding down, sipping something slow, or reading a book you're not quite ready to put down.
+---
+Synthwave is the sound of a city you've never visited but somehow remember. Built on analog synths, pulsing arpeggios, and cinematic drum machines, it conjures neon-lit highways and 1980s science fiction. Its energy sits in the middle ground — not aggressive, but never still. It's perfect for a late-night drive, a focused creative session, or any moment that calls for something cool and slightly cinematic.
+---
+Pop music is engineered for immediate connection. Bright melodies, tight hooks, and production that feels effortless even when it isn't — pop exists to make you feel something right now. High valence and high danceability are its hallmarks. Whether it's a euphoric chorus or a wistful bridge, pop earns its place in any playlist that needs a reliable lift in energy or mood.
+---
+Indie pop sits at the intersection of catchy and sincere. It borrows pop's melodic instincts but trades some of the gloss for a warmer, more personal feel — jangly guitars, layered harmonies, and lyrics that feel like they were written for a specific Tuesday afternoon. It's the genre for people who want something upbeat but not anonymous, fun but not shallow.
+---
+Rock channels raw energy through electric guitars and a driving rhythm section. It spans a wide emotional range — from anthemic and triumphant to brooding and cathartic — but its core is always forward momentum. When you need something that matches a surge of adrenaline, a workout, or a moment of release, rock delivers without hesitation.
+---
+Metal takes rock's intensity and strips away any remaining restraint. Distorted guitars, thunderous drumming, and tempos that rarely slow down make it the genre for pure emotional extremity. Anger, frustration, and power have a home here. Despite its aggression, metal rewards close listening — its technical complexity is real, and for those who connect with it, it's cathartic in a way few genres match.
+---
+Hip-hop is built on rhythm, rhyme, and cultural storytelling. Its beats are often syncopated and sample-driven, with a swagger and bounce that pushes high danceability. Hip-hop's energy can range from laid-back to explosive depending on the sub-style, but its defining quality is confidence — a sense that the beat and the voice on top of it know exactly what they're doing.
+---
+Classical music carries the weight of centuries of craft. At its quietest — a solo piano piece, a chamber work — it reaches an intimacy that few genres approach. Its acousticness is near-total, its tempos often deliberate, and its emotional range can span joy, grief, and everything unnamed in between. A melancholic classical piece doesn't just describe a feeling, it embodies it note by note.
+---
+R&B wraps groove and emotion in one package. Smooth production, soulful vocals, and an emphasis on feel over technical complexity give R&B its distinctive warmth. It tends toward moderate tempos and high valence — sensual but not overwhelming, emotional but grounded. R&B is the genre for candlelit evenings, late conversations, and any moment that calls for intimacy.
+---
+EDM is designed entirely around release. The build-up, the drop, the euphoria — every structural decision in electronic dance music is engineered to create a peak moment. High energy, very high danceability, and almost no acousticness define it. It is unambiguously the genre for movement, celebration, and collective joy.
+---
+Country music is rooted in place and story. Acoustic guitars, honest lyrics about real life — love, loss, home, and the road — and a warmth that feels like front-porch conversation. Its acousticness is generally high and its tempos are easy-going. Country connects with listeners through narrative and familiarity, the feeling that someone put your own life into words.
+---
+Blues is the sound of hardship transformed into beauty. Slow tempos, expressive guitar bends, and a vocal delivery that sits somewhere between singing and speaking give blues its emotional weight. Sadness in blues doesn't wallow — it testifies. Listening to a blues track is like sitting with someone who has been through something and came out the other side still standing.
+---
+Reggae moves at the pace of an island afternoon. Its signature offbeat guitar rhythm, deep bass lines, and laid-back tempo create a sense of effortless ease. Reggae is inherently peaceful — its grooves are steady and unhurried, its melodies are warm, and its whole sonic personality suggests that whatever the problem is, it can wait until tomorrow. High acousticness and medium energy give it a grounded, organic feel.
+---
+A chill mood in music means low stakes and low pressure. The sonic environment is soft, tempos are slow or moderate, and nothing is competing for your attention. Chill music doesn't ask anything of you — it exists alongside whatever you're doing, making it perfect for studying, relaxing, or just existing in a quiet moment.
+---
+A happy mood in music is instantly recognizable — bright major keys, upbeat tempos, and a melodic warmth that makes you want to smile before you know why. Happy tracks have high valence and tend toward higher energy, built to lift the room or the moment they're played in.
+---
+An intense mood means the music is pushing forward with urgency. High energy, fast tempos, and a feeling of pressure or momentum define it. Intense music is made for moments that match — a workout, a deadline, a surge of emotion that needs a soundtrack.
+---
+A focused mood is different from chill — it's chill with direction. The music is quiet enough not to distract, but structured enough to give your brain something to latch onto without pulling focus. Think of it as the soundtrack to productive solitude. Tempos are moderate, energy is low-to-medium, and the overall feel is organized and purposeful.
+---
+A melancholic mood sits in the space between sadness and beauty. The music is slow and introspective, often carried by a single instrument or a sparse arrangement. There's no resolution — melancholic music doesn't try to fix the feeling, it just honors it. Low energy, low valence, and very high acousticness are its defining qualities.
+---
+A moody atmosphere in music means emotional ambiguity — something is unresolved, tension is present, and the feeling could tip in several directions. Synthwave and dark ambient often carry this quality. Moody music suits late nights, solitary drives, and creative states where you're somewhere between inspired and unsettled.
+---
+An energetic mood is all movement and momentum. The music propels forward, danceability is high, and the tempo rarely lets up. Energetic tracks make you want to move — whether that's dancing, running, or just walking faster than you usually do.
+---
+A romantic mood in music is warm and slow, built for intimacy. Smooth vocals, rich harmonies, and a tempo that never rushes create an atmosphere of closeness. R&B and soul carry this quality best — there's an emotional openness that feels personal without being vulnerable.
+---
+A euphoric mood is the peak of emotional release in music. Everything is maximized — energy, danceability, and a soaring, triumphant quality that makes you feel briefly invincible. EDM drops and anthemic choruses live here. Euphoric music exists for the moments you want to remember.
+---
+A nostalgic mood carries the bittersweet weight of memory. The music sounds like something you've heard before even if you haven't — familiar chord progressions, warm acoustic tones, and a gentle tempo that lets you linger. Country and folk genres often carry this quality deeply, as if the music itself remembers something you've forgotten.
+---
+A peaceful mood means the music has resolved all its tension and arrived somewhere still. No urgency, no conflict — just a sense of calm that feels earned rather than empty. Reggae and soft acoustic genres live here. Peaceful music is what you put on when you finally have a moment to exhale.
+---
+A sad mood in music doesn't hide from the feeling — it leans into it. Slow tempos, minor keys, and sparse arrangements create space for grief or loss to exist without being rushed past. Blues and classical music handle sadness most honestly. Listening to sad music when you're sad is not wallowing — it's acknowledgment.
+---
+An angry mood in music is cathartic by design. Metal and aggressive rock carry this quality, channeling frustration and intensity into something you can feel in your chest. The release that comes from music that matches your anger is real — it doesn't amplify the feeling so much as give it somewhere to go.
+---
+Lofi and ambient share more DNA than their names suggest. Both prioritize texture over melody, atmosphere over rhythm, and the feeling of a moment over the structure of a song. Where lofi is warm and slightly nostalgic, ambient is cooler and more spacious — but a listener who loves one will often find the other fits naturally into the same listening session.
+---
+Jazz and blues are musical cousins with a shared emotional vocabulary. Both emerged from African American musical traditions and both use expression and improvisation as core tools. Jazz tends toward warmth and swing, blues toward raw feeling and simplicity, but the two genres often satisfy the same craving — music that feels genuinely human rather than polished or produced.
+---
+Lofi and indie pop occupy adjacent emotional space. Both are warm and personal, both resist the slickness of mainstream production, and both tend toward mid-range energy that suits quiet afternoons or introspective evenings. A listener who gravitates toward one is likely to find comfort in the other, especially in moments that call for something real and unhurried.
+---
+Classical and ambient music share a commitment to space and dynamics. Both use silence as a compositional tool, both reward patient listening, and both tend toward very high acousticness and very low energy. A listener drawn to melancholic classical pieces will often find ambient music resonates in similar moments — when the world feels too loud and you need something that just breathes.
+---
+R&B and jazz share a commitment to feel over formula. Both genres let the groove breathe, both value the space between notes, and both carry emotional depth that rewards careful listening. A listener who connects with one is likely to find something genuine in the other, especially in slower, more intimate moments.
