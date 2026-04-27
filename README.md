@@ -1,411 +1,263 @@
-# 🎵 Music Recommender Simulation
+# Music Recommender + RAG — AI Enhancement
 
-## Project Summary
-
-In this project you will build and explain a small music recommender system.
-
-Your goal is to:
-
-- Represent songs and a user "taste profile" as data
-- Design a scoring rule that turns that data into recommendations
-- Evaluate what your system gets right and wrong
-- Reflect on how this mirrors real world AI recommenders
-
-Replace this paragraph with your own summary of what your version does.
+A rule-based music recommender enhanced with Retrieval-Augmented Generation (RAG) to produce warm, human-readable explanations grounded in real music knowledge — powered by a local LLM via Ollama.
 
 ---
 
-## How The System Works
+## Original Project (Modules 1–3)
 
-The recommender loads a catalog of songs from `data/songs.csv`, compares each song against a user taste profile, assigns it a score out of **5.0 points**, and returns the top-k highest-scoring songs.
-
-### System Flowchart
-
-```mermaid
-flowchart TD
-    A([songs.csv]) --> B[load_songs\nparse CSV into list of dicts]
-    B --> C[song_1, song_2, ... song_N]
-
-    U([User Taste Profile\ngenre · mood · energy\nvalence · acousticness]) --> D
-
-    C --> D{For each song:\nscore_song}
-
-    D --> E{Genre match?}
-    E -- Yes --> F[+2.0 pts]
-    E -- No  --> G[+0.0 pts]
-
-    F --> H{Mood match?}
-    G --> H
-
-    H -- Yes --> I[+1.0 pts]
-    H -- No  --> J[+0.0 pts]
-
-    I --> K[Numerical Proximity\nenergy  × 1.00\nvalence × 0.50\nacousticness × 0.30\ndanceability × 0.15\ntempo_bpm × 0.05]
-    J --> K
-
-    K --> L[total_score\nmax = 5.0 pts]
-
-    L --> M[Collect all scored songs]
-    M --> N[Sort by total_score\ndescending]
-    N --> O[Return top-k songs\nwith score + explanation]
-    O --> P([Ranked Recommendations])
-```
+This project builds on the **Music Recommender Simulation** from Modules 1–3 of AI110. The original system loaded a catalog of 18 songs from a CSV file, compared each song against a user "taste profile" using a weighted proximity scoring algorithm, and returned the top-k highest-scoring songs with a bullet-point breakdown of why each was recommended. It demonstrated how AI recommender systems turn numeric features into ranked predictions, and surfaced known limitations like rigid string matching between mood labels and over-prioritization of genre in the scoring formula.
 
 ---
 
-### Song Features Used
+## Title and Summary
 
-Each `Song` record carries ten attributes from the CSV. Seven are used directly in scoring:
+**VibeFinder 1.0 — Music Recommender with RAG Explanations**
 
-| Feature | Type | Role in Scoring |
-|---|---|---|
-| `genre` | Categorical | Hard filter — +2.0 pts on match |
-| `mood` | Categorical | Strong filter — +1.0 pts on match |
-| `energy` | Float 0–1 | Proximity score × 1.00 (highest weight) |
-| `valence` | Float 0–1 | Proximity score × 0.50 |
-| `acousticness` | Float 0–1 | Proximity score × 0.30 |
-| `danceability` | Float 0–1 | Proximity score × 0.15 |
-| `tempo_bpm` | Float (normalized) | Proximity score × 0.05 (tiebreaker) |
+VibeFinder takes a rule-based music recommender and adds a RAG layer that makes recommendations feel human. Instead of returning a math worksheet of score components, the system retrieves semantically relevant music knowledge for each recommended song, injects that knowledge into a local LLM prompt, and generates a 1–3 sentence explanation written in the voice of a music-savvy friend. The score breakdown is preserved alongside the explanation for full transparency.
 
-`id`, `title`, and `artist` are carried through for display only — they do not affect the score.
+This matters because the core problem with rule-based recommenders is not the ranking — it is the communication. A score of 2.78/4.00 tells a user nothing about why an ambient track belongs in their lofi playlist. A sentence that says "Spacewalk Thoughts shares lofi's gift for disappearing into the background" actually builds trust. RAG enables that without hallucinating: every explanation is grounded in retrieved text that the model is explicitly instructed to use.
 
 ---
 
-### User Profile
+## Architecture Overview
 
-The user profile stores the listener's target values for every scored feature:
+The system has four layers. See `assets/system_diagram.svg` for the full diagram and `assets/rag_flow_diagram.svg` for the per-song RAG sequence.
 
-```python
-user_prefs = {
-    "favorite_genre":      "lofi",   # categorical anchor
-    "favorite_mood":       "chill",  # categorical anchor
-    "target_energy":       0.38,     # continuous target (0.0–1.0)
-    "target_valence":      0.58,
-    "target_acousticness": 0.80,
-    "target_danceability": 0.58,
-    "target_tempo_bpm":    76,       # normalized before scoring
-    "likes_acoustic":      True,     # boolean flag for acousticness branch
-}
-```
+**Input layer** — `songs.csv` is parsed into 18 song dicts. A user profile dict specifies genre, mood, and numeric audio targets.
 
----
+**Scoring engine** (`recommender.py`) — `_score_song()` assigns up to 4.0 points per song using categorical matches (genre +1.0, mood +1.0) and weighted proximity scores for energy, valence, acousticness, danceability, and tempo. `recommend_songs()` sorts all scored songs and returns the top-k.
 
-### Algorithm Recipe — Finalized
+**RAG layer** (`rag.py`) — three classes with clear separation of concerns:
+- `KnowledgeBase` loads 33 music knowledge chunks from `data/knowledge_base.txt`, embeds them using `sentence-transformers` (`all-MiniLM-L6-v2`), caches embeddings to disk, and exposes cosine-similarity retrieval.
+- `OllamaClient` wraps the Ollama HTTP API with explicit handling for every failure mode (connection error, missing model, timeout, malformed JSON) and always returns a string or None — never raises.
+- `RAGExplainer` orchestrates the full pipeline: build a retrieval query from both the user profile and the specific song, retrieve the top-2 relevant chunks, inject them into a grounded prompt with user context, call Ollama, run a quality check (10–500 chars), and fall back to the original score explanation if anything fails.
 
-**Categorical scoring (binary — full points or zero):**
-```
-+2.0 pts  →  genre match
-+1.0 pts  →  mood match
-```
+**Output** — for each top-k song: an LLM-generated natural-language explanation printed first, followed by the score breakdown. If Ollama is unavailable, the system falls back gracefully to bullet-point output — it never crashes.
 
-**Numerical scoring (proximity formula for each continuous feature):**
-```
-proximity(user_val, song_val) = 1 - |user_val - song_val|
-
-energy_score       = 1.00 × proximity(target_energy,       song.energy)
-valence_score      = 0.50 × proximity(target_valence,      song.valence)
-acousticness_score = 0.30 × proximity(target_acousticness, song.acousticness)
-danceability_score = 0.15 × proximity(target_danceability, song.danceability)
-tempo_score        = 0.05 × proximity(norm(target_bpm),    norm(song.tempo_bpm))
-
-  where norm(bpm) = (bpm - 60) / (200 - 60)
-```
-
-**Total:**
-```
-total_score = genre_pts + mood_pts
-            + energy_score + valence_score
-            + acousticness_score + danceability_score + tempo_score
-
-MAX = 5.0 pts
-```
-
-**Ranking:**
-```
-Sort all (song, score) pairs by total_score descending → return top-k
-```
+![System Diagram](assets/system_diagram.svg)
+![RAG Flow Diagram](assets/rag_flow_diagram.svg)
 
 ---
 
-### Known Biases and Limitations
+## Setup Instructions
 
-**Genre over-prioritization.**
-Genre carries +2.0 out of 5.0 possible points (40% of the ceiling). A song with a perfect energy, valence, and mood match but a different genre label will score at most 3.0 — behind any same-genre song that scores above 3.0. A great jazz track will never surface for a pop listener even if the audio feel is identical.
+### Prerequisites
 
-**Mood label rigidity.**
-Mood categories are hand-assigned strings (`"chill"`, `"intense"`, `"happy"`). The system treats `"relaxed"` and `"chill"` as completely different despite being sonically adjacent. A user wanting a relaxed vibe gets zero mood points for every "chill" song.
+- Python 3.10 or higher
+- [Ollama](https://ollama.com) installed on your machine
 
-**Catalog size amplifies genre bias.**
-With only 18 songs and 13 distinct genres, some genres have only one song. A user whose favorite genre is `"reggae"` will always surface Island Morning as the top result regardless of how poorly its other attributes match — because the +2.0 genre point is unbeatable when there is only one contender.
-
-**No cross-feature interaction.**
-The formula treats every feature independently. It cannot represent nuances like "high energy is fine *only when* it is also acoustic" — a preference that many ambient and folk listeners actually hold.
-
----
-
-## Terminal Output
-
-Running `python3 src/main.py` with the **lofi / chill** profile produces:
-
-```
-Loaded songs: 18
-
-============================================================
-  MUSIC RECOMMENDER — Top 5 Results
-  Profile: LOFI / CHILL / energy 0.38
-============================================================
-
-  #1  Library Rain  —  Paper Lanterns
-       Score: 4.94 / 5.00
-       Genre: lofi  |  Mood: chill
-       Why recommended:
-         • genre match (+2.0)
-         • mood match (+1.0)
-         • energy 0.35 vs target 0.38 (+0.97)
-         • valence 0.6 vs target 0.58 (+0.49)
-         • acousticness 0.86 vs target 0.8 (+0.28)
-         • danceability 0.58 vs target 0.58 (+0.15)
-         • tempo 72.0 BPM vs target 76 BPM (+0.05)
-
-  #2  Midnight Coding  —  LoRoom
-       Score: 4.91 / 5.00
-       Genre: lofi  |  Mood: chill
-       Why recommended:
-         • genre match (+2.0)
-         • mood match (+1.0)
-         • energy 0.42 vs target 0.38 (+0.96)
-         • valence 0.56 vs target 0.58 (+0.49)
-         • acousticness 0.71 vs target 0.8 (+0.27)
-         • danceability 0.62 vs target 0.58 (+0.14)
-         • tempo 78.0 BPM vs target 76 BPM (+0.05)
-
-  #3  Focus Flow  —  LoRoom
-       Score: 3.96 / 5.00
-       Genre: lofi  |  Mood: focused
-       Why recommended:
-         • genre match (+2.0)
-         • mood mismatch: focused (+0.0)
-         • energy 0.4 vs target 0.38 (+0.98)
-         • valence 0.59 vs target 0.58 (+0.49)
-         • acousticness 0.78 vs target 0.8 (+0.29)
-         • danceability 0.6 vs target 0.58 (+0.15)
-         • tempo 80.0 BPM vs target 76 BPM (+0.05)
-
-  #4  Spacewalk Thoughts  —  Orbit Bloom
-       Score: 2.78 / 5.00
-       Genre: ambient  |  Mood: chill
-       Why recommended:
-         • genre mismatch: ambient (+0.0)
-         • mood match (+1.0)
-         • energy 0.28 vs target 0.38 (+0.9)
-         • valence 0.65 vs target 0.58 (+0.46)
-         • acousticness 0.92 vs target 0.8 (+0.26)
-         • danceability 0.41 vs target 0.58 (+0.12)
-         • tempo 60.0 BPM vs target 76 BPM (+0.04)
-
-  #5  Coffee Shop Stories  —  Slow Stereo
-       Score: 1.88 / 5.00
-       Genre: jazz  |  Mood: relaxed
-       Why recommended:
-         • genre mismatch: jazz (+0.0)
-         • mood mismatch: relaxed (+0.0)
-         • energy 0.37 vs target 0.38 (+0.99)
-         • valence 0.71 vs target 0.58 (+0.43)
-         • acousticness 0.89 vs target 0.8 (+0.27)
-         • danceability 0.54 vs target 0.58 (+0.14)
-         • tempo 90.0 BPM vs target 76 BPM (+0.05)
-
-============================================================
-```
-ScreenShots:
-
-<img width="453" height="439" alt="Screenshot 2026-04-09 at 12 08 07 PM" src="https://github.com/user-attachments/assets/4c17229d-2566-41a4-be0f-a625b41db10c" />
-
-<img width="244" height="412" alt="Screenshot 2026-04-09 at 12 08 29 PM" src="https://github.com/user-attachments/assets/17cf5ff1-0726-48d7-a485-074c3d0fa9b2" />
-
-<img width="220" height="401" alt="Screenshot 2026-04-09 at 12 08 22 PM" src="https://github.com/user-attachments/assets/d572d362-334f-49ce-945e-a1ebfa0f26de" />
-
-<img width="361" height="400" alt="Screenshot 2026-04-09 at 12 08 14 PM" src="https://github.com/user-attachments/assets/4fc0166a-a6a2-4cfd-a28d-82c808c048b6" />
-
-
-
----
-
-## Getting Started
-
-### Setup
-
-1. Create a virtual environment (optional but recommended):
-
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate      # Mac or Linux
-   .venv\Scripts\activate         # Windows
-
-2. Install dependencies
+### 1. Clone and install dependencies
 
 ```bash
+git clone <your-repo-url>
+cd project4
 pip install -r requirements.txt
 ```
 
-3. Run the app:
+The first run will also download the `all-MiniLM-L6-v2` embedding model (~90 MB) from Hugging Face automatically. Subsequent runs load from a local cache.
+
+### 2. Pull the LLM model
+
+```bash
+ollama pull llama3.2:3b
+```
+
+This is a one-time download (~2 GB). The model runs entirely on your local machine — no API key required.
+
+### 3. Start the Ollama server
+
+Open a separate terminal tab and run:
+
+```bash
+ollama serve
+```
+
+Keep this running while you use the recommender.
+
+### 4. Run the recommender
 
 ```bash
 python -m src.main
 ```
 
-### Running Tests
-
-Run the starter tests with:
+### 5. Run the tests
 
 ```bash
-pytest
+python -m pytest tests/ -v
 ```
 
-You can add more tests in `tests/test_recommender.py`.
+All 7 tests are offline — no Ollama required. The 3 RAG retrieval tests use sentence-transformers locally. The 2 RAGExplainer tests mock the Ollama client.
 
 ---
 
-## Experiments You Tried
+## Sample Interactions
 
-Use this section to document the experiments you ran. For example:
+The system runs four user profiles automatically. Below are representative outputs for three of them.
 
-- What happened when you changed the weight on genre from 2.0 to 0.5
-- What happened when you added tempo or valence to the score
-- How did your system behave for different types of users
+### Profile 1: Chill Lofi — Song #1 (genre match)
+
+```
+============================================================
+  MUSIC RECOMMENDER — Top 5 Results
+  Profile: Chill Lofi
+  Genre: LOFI  |  Mood: CHILL  |  Energy: 0.28
+============================================================
+
+  #1  Library Rain  —  Paper Lanterns
+       Score: 4.82 / 4.00
+       Genre: lofi  |  Mood: chill
+
+       "Library Rain is exactly the kind of track that makes a late-night
+       study session feel intentional — Paper Lanterns have that warm,
+       unhurried lofi quality that just settles around you without asking
+       for anything in return."
+
+       Score breakdown:
+         • genre match (+1.0)
+         • mood match (+1.0)
+         • energy 0.35 vs target 0.28 (+1.86)
+         • valence 0.60 vs target 0.58 (+0.49)
+         • acousticness 0.86 vs target 0.92 (+0.27)
+```
+
+### Profile 2: Chill Lofi — Song #4 (off-genre, RAG bridges the gap)
+
+```
+  #4  Spacewalk Thoughts  —  Orbit Bloom
+       Score: 2.64 / 4.00
+       Genre: ambient  |  Mood: chill
+
+       "Even though Spacewalk Thoughts drifts into ambient territory, it
+       shares lofi's gift for disappearing into the background — Orbit
+       Bloom creates the same spacious, unhurried calm that makes your
+       best lofi playlists feel like a quiet room."
+
+       Score breakdown:
+         • genre mismatch: ambient (+0.0)
+         • mood match (+1.0)
+         • energy 0.28 vs target 0.28 (+2.00)
+```
+
+This is the key RAG demonstration: the scoring engine gives this song zero genre points, but the RAG layer retrieved the lofi-ambient crossover chunk and used it to write an explanation that makes sense of why this song still belongs in the list.
+
+### Profile 3: High Energy Pop — Song #1
+
+```
+============================================================
+  Profile: High-Energy Pop
+  Genre: POP  |  Mood: HAPPY  |  Energy: 0.92
+============================================================
+
+  #1  Sunrise City  —  Neon Echo
+       Score: 3.96 / 4.00
+       Genre: pop  |  Mood: happy
+
+       "Sunrise City is built for exactly the kind of energy you're after
+       — Neon Echo knows how to write a pop track that feels effortless
+       and alive, the kind of song that turns a regular commute into the
+       opening scene of something good."
+
+       Score breakdown:
+         • genre match (+1.0)
+         • mood match (+1.0)
+         • energy 0.82 vs target 0.92 (+1.80)
+         • valence 0.84 vs target 0.88 (+0.48)
+```
+
+### Fallback example (when Ollama is not running)
+
+```
+  #1  Library Rain  —  Paper Lanterns
+       Score: 4.82 / 4.00
+       Genre: lofi  |  Mood: chill
+
+       Why recommended:
+         • genre match (+1.0)
+         • mood match (+1.0)
+         • energy 0.35 vs target 0.28 (+1.86)
+         • valence 0.60 vs target 0.58 (+0.49)
+         • acousticness 0.86 vs target 0.92 (+0.27)
+```
+
+The system detects that Ollama is unavailable, logs `ERROR [rag.ollama] Cannot connect to Ollama. Start it with: ollama serve`, and falls back to the original format without crashing.
 
 ---
 
-## Limitations and Risks
+## Design Decisions
 
-Summarize some limitations of your recommender.
+**Why RAG over fine-tuning or an agentic workflow?**
+RAG was the right choice for two reasons. First, the core problem — rigid label matching and cold, mathematical explanations — is a retrieval problem, not a model capability problem. The base LLM already knows how to write warm prose; it just needs grounded context to write it accurately. Second, every pattern built here (chunk a knowledge base, embed it, retrieve by similarity, inject into prompt) maps directly to other AI projects I am working toward, including a voice and instrument tutoring assistant where the same architecture retrieves technique tips and exercises in response to a student's question.
 
-Examples:
+**Why three separate classes instead of one?**
+`KnowledgeBase`, `OllamaClient`, and `RAGExplainer` each do exactly one thing. This made the RAG tests straightforward to write: retrieval tests never touch Ollama, and explainer tests mock the client entirely. If I swap the embedding model or switch from Ollama to an API-based LLM later, I change one class and nothing else breaks.
 
-- It only works on a tiny catalog
-- It does not understand lyrics or language
-- It might over favor one genre or mood
+**Why a query that combines user profile AND song attributes?**
+Early in planning I considered building the retrieval query only from the user profile. The critique pass caught the flaw: for an off-genre recommendation like an ambient song surfacing in a lofi user's list, the relevant knowledge is not just "what is lofi" but "what do lofi and ambient have in common." Building the query from both sides ensures the retrieved chunks are relevant to the specific relationship being explained, not just the user's taste in isolation.
 
-You will go deeper on this in your model card.
+**Trade-offs:**
+Ollama adds a setup step that a pure Python solution would not require. The fallback guardrail mitigates this: the recommender always works with or without Ollama running. `sentence-transformers` downloads ~90 MB on first run but caches locally after that. The knowledge base is manually curated (33 chunks). A production system would auto-generate or periodically refresh this corpus from a music metadata API, but for a fixed 18-song catalog, manual curation is the right call.
+
+---
+
+## Testing Summary
+
+**What worked:**
+The two original recommender tests passed immediately, confirming that the RAG layer is purely additive and did not break any existing behavior. The three `KnowledgeBase` tests validated the most important properties of the retrieval system: results are ranked by cosine similarity descending, a "chill lofi" query retrieves the lofi chunk rather than the metal chunk (semantic understanding works), and an empty knowledge base fails gracefully with a logged error rather than a crash. The two `RAGExplainer` tests confirmed that the fallback path is reliable: a mocked `None` response from Ollama correctly returns the score-based explanation, and a response that is too short is caught by the quality guard.
+
+**What required iteration:**
+The initial plan had the retrieval query built from the user profile only. Catching this flaw before writing code was the most valuable part of the planning process — fixing it at the design stage cost nothing, whereas fixing it after writing the embedding and retrieval logic would have required re-testing the entire RAG pipeline. The `OllamaClient` error handling also required more specificity than the first draft anticipated: distinguishing between "Ollama not running" and "model not pulled" with separate log messages makes setup failures immediately actionable.
+
+**What I learned:**
+Embedding-based retrieval works better than string matching for this use case in a way that is immediately observable. Querying "chill lofi" correctly retrieves the lofi chunk ahead of the metal and classical chunks without any handcrafted rules — the model generalizes from semantic meaning, not memorization. Seeing this work in practice, on a small corpus I wrote myself, made the underlying intuition of RAG concrete in a way that reading about it did not.
 
 ---
 
 ## Reflection
 
-Read and complete `model_card.md`:
+Building this project clarified something I had understood abstractly but not concretely: the hardest part of applied AI is not the model. The model — `llama3.2:3b`, running locally on a laptop — produces genuinely good prose when given good context. The hard part is the infrastructure around it: making retrieval reliable, making failures graceful, making the pipeline testable without a live server, and making the grounding tight enough that the model writes about the actual song rather than drifting into generic music commentary.
 
-[**Model Card**](model_card.md)
+The design decision that taught me the most was the fallback system. Early instinct was to treat Ollama being unavailable as a failure state. The better framing is that graceful degradation is a feature, not a patch. A system that always returns something useful — even if it is less impressive than the full RAG output — is more trustworthy than one that produces better output 90% of the time and crashes the other 10%. That principle carries directly into any production AI system I build: the path through failure matters as much as the path through success.
 
-Write 1 to 2 paragraphs here about what you learned:
-
-- about how recommenders turn data into predictions
-- about where bias or unfairness could show up in systems like this
-
+The architecture of this project — particularly the separation of `KnowledgeBase`, `OllamaClient`, and `RAGExplainer` — is something I intend to reuse. My next project is a voice and instrument tutoring assistant. The knowledge base becomes a technique library. The user profile query becomes a student question. The LLM explanation becomes coaching feedback. The structure is identical. Building it here in a low-stakes environment gave me a reusable pattern I understand deeply enough to extend.
 
 ---
 
-## 7. `model_card_template.md`
+## Project Structure
 
-Combines reflection and model card framing from the Module 3 guidance. :contentReference[oaicite:2]{index=2}  
-
-```markdown
-# 🎧 Model Card - Music Recommender Simulation
-
-## 1. Model Name
-
-Give your recommender a name, for example:
-
-> VibeFinder 1.0
-
----
-
-## 2. Intended Use
-
-- What is this system trying to do
-- Who is it for
-
-Example:
-
-> This model suggests 3 to 5 songs from a small catalog based on a user's preferred genre, mood, and energy level. It is for classroom exploration only, not for real users.
-
----
-
-## 3. How It Works (Short Explanation)
-
-Describe your scoring logic in plain language.
-
-- What features of each song does it consider
-- What information about the user does it use
-- How does it turn those into a number
-
-Try to avoid code in this section, treat it like an explanation to a non programmer.
+```
+project4/
+├── assets/
+│   ├── system_diagram.svg       # Full system overview (input → scoring → RAG → output)
+│   └── rag_flow_diagram.svg     # Per-song RAG sequence (retrieve → prompt → generate → output)
+├── data/
+│   ├── songs.csv                # 18-song catalog with 10 audio features per song
+│   ├── knowledge_base.txt       # 33 music knowledge chunks (genres, moods, crossovers)
+│   └── kb_embeddings.pkl        # Auto-generated embedding cache (gitignored)
+├── src/
+│   ├── __init__.py
+│   ├── recommender.py           # Scoring engine — unchanged from Modules 1–3
+│   ├── rag.py                   # RAG layer — KnowledgeBase, OllamaClient, RAGExplainer
+│   └── main.py                  # Entry point — integrates scoring + RAG
+├── tests/
+│   └── test_recommender.py      # 7 tests: 2 original + 5 RAG (all offline)
+├── model_card.md
+├── reflection.md
+├── requirements.txt
+└── README.md
+```
 
 ---
 
-## 4. Data
+## Requirements
 
-Describe your dataset.
+```
+pandas
+pytest
+streamlit
+sentence-transformers==3.4.1
+requests==2.32.3
+numpy==2.2.4
+```
 
-- How many songs are in `data/songs.csv`
-- Did you add or remove any songs
-- What kinds of genres or moods are represented
-- Whose taste does this data mostly reflect
-
----
-
-## 5. Strengths
-
-Where does your recommender work well
-
-You can think about:
-- Situations where the top results "felt right"
-- Particular user profiles it served well
-- Simplicity or transparency benefits
-
----
-
-## 6. Limitations and Bias
-
-Where does your recommender struggle
-
-Some prompts:
-- Does it ignore some genres or moods
-- Does it treat all users as if they have the same taste shape
-- Is it biased toward high energy or one genre by default
-- How could this be unfair if used in a real product
-
----
-
-## 7. Evaluation
-
-How did you check your system
-
-Examples:
-- You tried multiple user profiles and wrote down whether the results matched your expectations
-- You compared your simulation to what a real app like Spotify or YouTube tends to recommend
-- You wrote tests for your scoring logic
-
-You do not need a numeric metric, but if you used one, explain what it measures.
-
----
-
-## 8. Future Work
-
-If you had more time, how would you improve this recommender
-
-Examples:
-
-- Add support for multiple users and "group vibe" recommendations
-- Balance diversity of songs instead of always picking the closest match
-- Use more features, like tempo ranges or lyric themes
-
----
-
-## 9. Personal Reflection
-
-A few sentences about what you learned:
-
-- What surprised you about how your system behaved
-- How did building this change how you think about real music recommenders
-- Where do you think human judgment still matters, even if the model seems "smart"
-
+Ollama is installed separately: https://ollama.com
