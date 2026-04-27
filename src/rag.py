@@ -457,6 +457,25 @@ class RAGExplainer:
             )
             return fallback
 
+        # ── Retrieval confidence ─────────────────────────────────────────────
+        # The cosine similarity of the top retrieved chunk (0.0–1.0) serves as
+        # a proxy for how confident we are that the retrieved knowledge is
+        # relevant to this song + user combination.
+        #   ≥ 0.70  high confidence — chunk is a strong semantic match
+        #   0.50–0.69  moderate — chunk is related but not a perfect fit
+        #   < 0.50  low confidence — retrieval is uncertain; explanation may be generic
+        retrieval_confidence = chunks[0][1]
+        if retrieval_confidence >= 0.70:
+            confidence_label = "HIGH"
+        elif retrieval_confidence >= 0.50:
+            confidence_label = "MODERATE"
+        else:
+            confidence_label = "LOW"
+        self.log.info(
+            f"Retrieval confidence for '{song.get('title')}': "
+            f"{retrieval_confidence:.3f} ({confidence_label})"
+        )
+
         # Step 3: Build the grounded prompt
         prompt = self._build_prompt(song, user_prefs, chunks)
 
@@ -472,5 +491,8 @@ class RAGExplainer:
         if not self._quality_check(response):
             return fallback
 
-        self.log.info(f"RAG explanation generated for '{song.get('title')}'")
+        self.log.info(
+            f"RAG explanation generated for '{song.get('title')}' "
+            f"[confidence={retrieval_confidence:.3f}]"
+        )
         return response
