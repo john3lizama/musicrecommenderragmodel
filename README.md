@@ -2,8 +2,8 @@
 
 A rule-based music recommender enhanced with Retrieval-Augmented Generation (RAG) to produce warm, human-readable explanations grounded in real music knowledge — powered by a local LLM via Ollama.
 
-> **Demo Walkthrough:** [Loom Video](https://www.loom.com/share/your-link-here) ← replace with your recorded link
-> **GitHub Repository:** [github.com/your-username/project4](https://github.com/your-username/project4) ← replace with your repo URL
+> **Demo Walkthrough:** [YouTube Video](https://www.youtube.com/watch?v=OB1oi7T60mc)
+> **GitHub Repository:** [github.com/john3lizama/musicrecommenderragmodel](https://github.com/john3lizama/musicrecommenderragmodel)
 
 ---
 
